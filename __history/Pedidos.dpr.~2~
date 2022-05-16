@@ -1,0 +1,14 @@
+program Pedidos;
+
+uses
+  System.StartUpCopy,
+  FMX.Forms,
+  Unitinicial in 'Unitinicial.pas' {FrmInicial};
+
+{$R *.res}
+
+begin
+  Application.Initialize;
+  Application.CreateForm(TFrmInicial, FrmInicial);
+  Application.Run;
+end.
