@@ -1,0 +1,57 @@
+unit UnitPrincipal;
+
+interface
+
+uses
+  System.SysUtils,
+  System.Types,
+  System.UITypes,
+  System.Classes,
+  System.Variants,
+
+  FMX.Types,
+  FMX.Controls,
+  FMX.Forms,
+  FMX.Graphics,
+  FMX.Dialogs,
+  FMX.Layouts, FMX.Objects, FMX.TabControl;
+
+type
+  TFrmPrincipal = class(TForm)
+    lyt_aba: TLayout;
+    lyt_aba_pedido: TLayout;
+    lyt_aba_cliente: TLayout;
+    lyt_aba_notificacao: TLayout;
+    lyt_aba_mais: TLayout;
+    Image1: TImage;
+    Image2: TImage;
+    Image3: TImage;
+    Image4: TImage;
+    TabControl1: TTabControl;
+    Circle1: TCircle;
+    procedure Image1Click(Sender: TObject);
+    procedure SelecionaTab(Tab: TImage);
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  FrmPrincipal: TFrmPrincipal;
+
+implementation
+
+{$R *.fmx}
+
+procedure TFrmPrincipal.Image1Click(Sender: TObject);
+begin
+   SelecionaTab(TImage(Sender));
+end;
+
+procedure TFrmPrincipal.SelecionaTab(Tab: TImage);
+begin
+ //
+end;
+
+end.

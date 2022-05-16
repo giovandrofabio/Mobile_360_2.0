@@ -11,7 +11,7 @@ uses
 
 begin
   Application.Initialize;
-  Application.CreateForm(TFrmInicial, FrmInicial);
   Application.CreateForm(TFrmPrincipal, FrmPrincipal);
+  Application.CreateForm(TFrmInicial, FrmInicial);
   Application.Run;
 end.
