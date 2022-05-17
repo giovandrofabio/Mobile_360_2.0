@@ -49,35 +49,9 @@ type
     edt_email: TEdit;
     StyleBook1: TStyleBook;
     Image1: TImage;
-    Rectangle2: TRectangle;
-    Label2: TLabel;
-    Image2: TImage;
-    Layout2: TLayout;
-    Rectangle3: TRectangle;
-    Edit1: TEdit;
-    lv_clientes: TListView;
-    Rectangle4: TRectangle;
-    Label3: TLabel;
-    lv_notificacao: TListView;
-    Rectangle5: TRectangle;
-    Label4: TLabel;
-    Layout3: TLayout;
-    Layout4: TLayout;
-    img_produtos: TImage;
-    Label5: TLabel;
-    img_sincronizar: TImage;
-    Label6: TLabel;
-    Layout5: TLayout;
-    img_perfil: TImage;
-    Label7: TLabel;
-    img_indicar: TImage;
-    Label8: TLabel;
-    img_sair: TImage;
-    Label9: TLabel;
     procedure img_tab_pedidoClick(Sender: TObject);
     procedure SelecionaTab(img: TImage);
     procedure FormCreate(Sender: TObject);
-    procedure FormShow(Sender: TObject);
   private
     { Private declarations }
   public
@@ -95,11 +69,6 @@ procedure TFrmPrincipal.FormCreate(Sender: TObject);
 begin
   TabControl.TabPosition := TTabPosition.None;
   TabControl.ActiveTab   := TabPedido;
-end;
-
-procedure TFrmPrincipal.FormShow(Sender: TObject);
-begin
-   SelecionaTab(img_tab_pedido);
 end;
 
 procedure TFrmPrincipal.img_tab_pedidoClick(Sender: TObject);

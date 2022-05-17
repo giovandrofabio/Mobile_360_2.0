@@ -10,7 +10,6 @@ object FrmPrincipal: TFrmPrincipal
   FormFactor.Height = 480
   FormFactor.Devices = [Desktop]
   OnCreate = FormCreate
-  OnShow = FormShow
   DesignerMasterStyle = 0
   object lyt_aba: TLayout
     Align = Bottom
@@ -757,13 +756,13 @@ object FrmPrincipal: TFrmPrincipal
       object Layout3: TLayout
         Align = Center
         Size.Width = 232.000000000000000000
-        Size.Height = 354.000000000000000000
+        Size.Height = 318.000000000000000000
         Size.PlatformDefault = False
         TabOrder = 1
         object Layout4: TLayout
           Align = Top
           Size.Width = 232.000000000000000000
-          Size.Height = 122.000000000000000000
+          Size.Height = 113.000000000000000000
           Size.PlatformDefault = False
           TabOrder = 1
           object img_produtos: TImage
@@ -936,7 +935,7 @@ object FrmPrincipal: TFrmPrincipal
               end>
             Align = Center
             Margins.Right = 120.000000000000000000
-            Margins.Bottom = 40.000000000000000000
+            Margins.Bottom = 20.000000000000000000
             Size.Width = 81.000000000000000000
             Size.Height = 73.000000000000000000
             Size.PlatformDefault = False
@@ -1035,7 +1034,7 @@ object FrmPrincipal: TFrmPrincipal
               end>
             Align = Center
             Margins.Left = 120.000000000000000000
-            Margins.Bottom = 40.000000000000000000
+            Margins.Bottom = 20.000000000000000000
             Size.Width = 81.000000000000000000
             Size.Height = 73.000000000000000000
             Size.PlatformDefault = False
@@ -1058,9 +1057,9 @@ object FrmPrincipal: TFrmPrincipal
         end
         object Layout5: TLayout
           Align = Top
-          Position.Y = 122.000000000000000000
+          Position.Y = 113.000000000000000000
           Size.Width = 232.000000000000000000
-          Size.Height = 122.000000000000000000
+          Size.Height = 104.000000000000000000
           Size.PlatformDefault = False
           TabOrder = 0
           object img_perfil: TImage
@@ -1133,7 +1132,7 @@ object FrmPrincipal: TFrmPrincipal
               end>
             Align = Center
             Margins.Right = 120.000000000000000000
-            Margins.Bottom = 30.000000000000000000
+            Margins.Bottom = 20.000000000000000000
             Size.Width = 81.000000000000000000
             Size.Height = 73.000000000000000000
             Size.PlatformDefault = False
@@ -1249,7 +1248,7 @@ object FrmPrincipal: TFrmPrincipal
               end>
             Align = Center
             Margins.Left = 120.000000000000000000
-            Margins.Bottom = 30.000000000000000000
+            Margins.Bottom = 20.000000000000000000
             Size.Width = 81.000000000000000000
             Size.Height = 73.000000000000000000
             Size.PlatformDefault = False
@@ -1337,7 +1336,7 @@ object FrmPrincipal: TFrmPrincipal
                 'elphi\Images\icon-lock.png'
             end>
           Align = Center
-          Margins.Bottom = 10.000000000000000000
+          Margins.Bottom = 20.000000000000000000
           Size.Width = 81.000000000000000000
           Size.Height = 73.000000000000000000
           Size.PlatformDefault = False
