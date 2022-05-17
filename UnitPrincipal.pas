@@ -14,7 +14,9 @@ uses
   FMX.Forms,
   FMX.Graphics,
   FMX.Dialogs,
-  FMX.Layouts, FMX.Objects, FMX.TabControl, System.Actions, FMX.ActnList;
+  FMX.Layouts, FMX.Objects, FMX.TabControl, System.Actions, FMX.ActnList,
+  FMX.ListView.Types, FMX.ListView.Appearances, FMX.ListView.Adapters.Base,
+  FMX.ListView, FMX.Controls.Presentation, FMX.StdCtrls, FMX.Edit;
 
 type
   TFrmPrincipal = class(TForm)
@@ -38,6 +40,15 @@ type
     ActCliente: TChangeTabAction;
     ActNotificacao: TChangeTabAction;
     ActMais: TChangeTabAction;
+    Line1: TLine;
+    toolbar: TRectangle;
+    Layout1: TLayout;
+    Label1: TLabel;
+    lv_pedido: TListView;
+    Rectangle1: TRectangle;
+    edt_email: TEdit;
+    StyleBook1: TStyleBook;
+    Image1: TImage;
     procedure img_tab_pedidoClick(Sender: TObject);
     procedure SelecionaTab(img: TImage);
     procedure FormCreate(Sender: TObject);
