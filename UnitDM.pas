@@ -50,7 +50,7 @@ procedure Tdm.DataModuleCreate(Sender: TObject);
 begin
    with conn do
    begin
-      Params.Values['DriverID'] := 'SQLLite';
+      Params.Values['DriverID'] := 'SQLite';
       {$IFDEF IOS}
       Params.Values['Database'] := TPath.Combine(TPath.GetDocumentsPath, 'pedidos.db');
       {$ENDIF}
@@ -61,6 +61,7 @@ begin
 
       {$IFDEF MSWINDOWS}
       Params.Values['Database'] := System.SysUtils.GetCurrentDir + '\DB\pedidos.db';
+      //Params.Values['Database'] := 'C:\Users\Giovandro\Documents\Embarcadero\Studio\Projects\FontesDelphi\Win32\Debug\DB\pedidos.db';
       {$ENDIF}
 
       try

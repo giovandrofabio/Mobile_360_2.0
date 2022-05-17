@@ -78,6 +78,8 @@ type
     procedure SelecionaTab(img: TImage);
     procedure FormCreate(Sender: TObject);
     procedure FormShow(Sender: TObject);
+    procedure AddPedido(pedido, cliente, dt_pedido, ind_entregue, status :string;
+                        valor : Double);
   private
     { Private declarations }
   public
@@ -91,6 +93,39 @@ implementation
 
 {$R *.fmx}
 
+procedure TFrmPrincipal.AddPedido(pedido, cliente, dt_pedido, ind_entregue,
+  status: string; valor: Double);
+var
+   item : TListViewItem;
+   txt: TListItemText;
+begin
+   try
+      item := lv_pedido.Items.Add;
+
+      with item do
+      begin
+        //Numero do Pedido...
+        txt      := TListItemText(Objects.FindDrawable('TxtPedido'));
+        txt.Text := 'Pedido #' + pedido;
+
+        //Cliente...
+        txt      := TListItemText(Objects.FindDrawable('TxtCliente'));
+        txt.Text := cliente;
+
+        //Data do Pedido...
+        txt      := TListItemText(Objects.FindDrawable('TxtData'));
+        txt.Text := dt_pedido;
+
+        //Valor...
+        txt      := TListItemText(Objects.FindDrawable('TxtValor'));
+        txt.Text := 'R$' +  FormatFloat('#,##0.00', Valor);
+
+      end;
+   except on E: Exception do
+      ShowMessage('Erro ao inserir pedido na lista:' + e.Message);
+   end;
+end;
+
 procedure TFrmPrincipal.FormCreate(Sender: TObject);
 begin
   TabControl.TabPosition := TTabPosition.None;
@@ -100,6 +135,9 @@ end;
 procedure TFrmPrincipal.FormShow(Sender: TObject);
 begin
    SelecionaTab(img_tab_pedido);
+
+   AddPedido('0001','99 Coders','15/02/2022','S','P',500);
+   AddPedido('0002','Walmart','18/02/2022','N','P',9000);
 end;
 
 procedure TFrmPrincipal.img_tab_pedidoClick(Sender: TObject);
