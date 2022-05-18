@@ -74,6 +74,9 @@ type
     Label8: TLabel;
     img_sair: TImage;
     Label9: TLabel;
+    img_entregue: TImage;
+    img_sinc: TImage;
+    img_nao_sinc: TImage;
     procedure img_tab_pedidoClick(Sender: TObject);
     procedure SelecionaTab(img: TImage);
     procedure FormCreate(Sender: TObject);
@@ -97,16 +100,44 @@ procedure TFrmPrincipal.AddPedido(pedido, cliente, dt_pedido, ind_entregue,
   status: string; valor: Double);
 var
    item : TListViewItem;
-   txt: TListItemText;
+   txt  : TListItemText;
+   img  : TListItemImage;
 begin
    try
       item := lv_pedido.Items.Add;
 
       with item do
       begin
-        //Numero do Pedido
+        //Numero do Pedido...
         txt      := TListItemText(Objects.FindDrawable('TxtPedido'));
         txt.Text := 'Pedido #' + pedido;
+
+        //Cliente...
+        txt      := TListItemText(Objects.FindDrawable('TxtCliente'));
+        txt.Text := cliente;
+
+        //Data do Pedido...
+        txt      := TListItemText(Objects.FindDrawable('TxtData'));
+        txt.Text := dt_pedido;
+
+        //Valor...
+        txt      := TListItemText(Objects.FindDrawable('TxtValor'));
+        txt.Text := 'R$' +  FormatFloat('#,##0.00', Valor);
+
+        //Entregue...
+        img      := TListItemImage(Objects.FindDrawable('ImgEntregue'));
+        if ind_entregue = 'S' then
+           img.Bitmap := img_entregue.Bitmap
+        else
+           img.Visible := false;
+
+        //Sincronizado...
+        img      := TListItemImage(Objects.FindDrawable('ImgSinc'));
+        if status = 'P' then
+           img.Bitmap := img_sinc.Bitmap
+        else
+           img.Bitmap := img_nao_sinc.Bitmap
+
       end;
    except on E: Exception do
       ShowMessage('Erro ao inserir pedido na lista:' + e.Message);
@@ -122,6 +153,10 @@ end;
 procedure TFrmPrincipal.FormShow(Sender: TObject);
 begin
    SelecionaTab(img_tab_pedido);
+
+   AddPedido('0001','99 Coders','15/02/2022','S','P',500);
+   AddPedido('0002','Walmart','18/02/2022','N','O',9000);
+   AddPedido('0003','Walmart','18/02/2022','N','O',9000);
 end;
 
 procedure TFrmPrincipal.img_tab_pedidoClick(Sender: TObject);

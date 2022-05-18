@@ -74,6 +74,9 @@ type
     Label8: TLabel;
     img_sair: TImage;
     Label9: TLabel;
+    img_entregue: TImage;
+    img_sinc: TImage;
+    img_nao_sinc: TImage;
     procedure img_tab_pedidoClick(Sender: TObject);
     procedure SelecionaTab(img: TImage);
     procedure FormCreate(Sender: TObject);
@@ -97,7 +100,8 @@ procedure TFrmPrincipal.AddPedido(pedido, cliente, dt_pedido, ind_entregue,
   status: string; valor: Double);
 var
    item : TListViewItem;
-   txt: TListItemText;
+   txt  : TListItemText;
+   img  : TListItemImage;
 begin
    try
       item := lv_pedido.Items.Add;
@@ -106,7 +110,10 @@ begin
       begin
         //Numero do Pedido...
         txt      := TListItemText(Objects.FindDrawable('TxtPedido'));
-        txt.Text := 'Pedido #' + pedido;
+        if status = 'P' then
+           txt.Text := 'Pedido #' + pedido
+        else
+           txt.Text := 'Orçamento';
 
         //Cliente...
         txt      := TListItemText(Objects.FindDrawable('TxtCliente'));
@@ -119,6 +126,20 @@ begin
         //Valor...
         txt      := TListItemText(Objects.FindDrawable('TxtValor'));
         txt.Text := 'R$' +  FormatFloat('#,##0.00', Valor);
+
+        //Entregue...
+        img      := TListItemImage(Objects.FindDrawable('ImgEntregue'));
+        if ind_entregue = 'S' then
+           img.Bitmap := img_entregue.Bitmap
+        else
+           img.Visible := false;
+
+        //Sincronizado...
+        img      := TListItemImage(Objects.FindDrawable('ImgSinc'));
+        if status = 'P' then
+           img.Bitmap := img_sinc.Bitmap
+        else
+           img.Bitmap := img_nao_sinc.Bitmap
 
       end;
    except on E: Exception do
@@ -137,7 +158,8 @@ begin
    SelecionaTab(img_tab_pedido);
 
    AddPedido('0001','99 Coders','15/02/2022','S','P',500);
-   AddPedido('0002','Walmart','18/02/2022','N','P',9000);
+   AddPedido('0002','Walmart','18/02/2022','N','O',9000);
+   AddPedido('0003','Kalunga','19/02/2022','N','P',1000);
 end;
 
 procedure TFrmPrincipal.img_tab_pedidoClick(Sender: TObject);
