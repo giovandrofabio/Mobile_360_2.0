@@ -55,7 +55,7 @@ type
     Label1: TLabel;
     lv_pedido: TListView;
     Rectangle1: TRectangle;
-    edt_email: TEdit;
+    edt_busca_pedido: TEdit;
     StyleBook1: TStyleBook;
     Image1: TImage;
     Rectangle2: TRectangle;
@@ -86,14 +86,16 @@ type
     img_entregue: TImage;
     img_sinc: TImage;
     img_nao_sinc: TImage;
+    img_busca_pedido: TImage;
     procedure img_tab_pedidoClick(Sender: TObject);
     procedure SelecionaTab(img: TImage);
     procedure FormCreate(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure AddPedido(pedido, cliente, dt_pedido, ind_entregue, ind_sinc :string;
                         valor : Double);
+    procedure img_busca_pedidoClick(Sender: TObject);
   private
-    procedure ListarPedido(buscar: string; ind_clear: boolean; pagina: integer);
+    procedure ListarPedido(buscar: string; ind_clear: boolean);
     { Private declarations }
   public
     { Public declarations }
@@ -109,7 +111,7 @@ uses
 
 {$R *.fmx}
 
-procedure TFrmPrincipal.ListarPedido(buscar: string; ind_clear: boolean; pagina: integer);
+procedure TFrmPrincipal.ListarPedido(buscar: string; ind_clear: boolean);
 begin
    dm.qry_pedido.Active := False;
    dm.qry_pedido.SQL.Clear;
@@ -120,7 +122,10 @@ begin
    // Filtro
    if buscar <> '' then
    begin
-      dm.qry_pedido.SQL.Add('WHERE....');
+      dm.qry_pedido.SQL.Add('WHERE ( C.NOME LIKE ''%'' || :BUSCA || ''%'' ');
+      dm.qry_pedido.SQL.Add('       OR P.PEDIDO = :PEDIDO ) ');
+      dm.qry_pedido.ParamByName('BUSCA').value  := buscar;
+      dm.qry_pedido.ParamByName('PEDIDO').value := buscar;
    end;
 
    dm.qry_pedido.Active := True;
@@ -206,7 +211,12 @@ procedure TFrmPrincipal.FormShow(Sender: TObject);
 begin
    SelecionaTab(img_tab_pedido);
 
-   ListarPedido('',True,0);
+   ListarPedido('',True);
+end;
+
+procedure TFrmPrincipal.img_busca_pedidoClick(Sender: TObject);
+begin
+   ListarPedido(edt_busca_pedido.Text, True);
 end;
 
 procedure TFrmPrincipal.img_tab_pedidoClick(Sender: TObject);

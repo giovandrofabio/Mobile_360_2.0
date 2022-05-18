@@ -55,7 +55,7 @@ type
     Label1: TLabel;
     lv_pedido: TListView;
     Rectangle1: TRectangle;
-    edt_email: TEdit;
+    edt_busca_pedido: TEdit;
     StyleBook1: TStyleBook;
     Image1: TImage;
     Rectangle2: TRectangle;
@@ -86,12 +86,14 @@ type
     img_entregue: TImage;
     img_sinc: TImage;
     img_nao_sinc: TImage;
+    img_busca_pedido: TImage;
     procedure img_tab_pedidoClick(Sender: TObject);
     procedure SelecionaTab(img: TImage);
     procedure FormCreate(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure AddPedido(pedido, cliente, dt_pedido, ind_entregue, ind_sinc :string;
                         valor : Double);
+    procedure img_busca_pedidoClick(Sender: TObject);
   private
     procedure ListarPedido(buscar: string; ind_clear: boolean; pagina: integer);
     { Private declarations }
@@ -113,9 +115,9 @@ procedure TFrmPrincipal.ListarPedido(buscar: string; ind_clear: boolean; pagina:
 begin
    dm.qry_pedido.Active := False;
    dm.qry_pedido.SQL.Clear;
-   dm.qry_pedido.SQL.Add('SELECT P.*, C.NOME');
-   dm.qry_pedido.SQL.Add('FROM TAB_PEDIDO P');
-   dm.qry_pedido.SQL.Add('JOIN TAB_CLIENTE C ON (C.COD_CLIENTE = P.COD_CLIENTE)');
+   dm.qry_pedido.SQL.Add('SELECT P.*,C.NOME ');
+   dm.qry_pedido.SQL.Add('FROM TAB_PEDIDO P ');
+   dm.qry_pedido.SQL.Add('INNER JOIN TAB_CLIENTE C ON (C.COD_CLIENTE = P.COD_CLIENTE) ');
 
    // Filtro
    if buscar <> '' then
@@ -130,6 +132,17 @@ begin
       lv_pedido.Items.Clear;
 
    lv_pedido.BeginUpdate;
+
+   while not dm.qry_pedido.Eof do
+   begin
+      AddPedido(dm.qry_pedido.FieldByName('PEDIDO').AsString,
+                dm.qry_pedido.FieldByName('NOME').AsString,
+                FormatDateTime('dd/mm/yyyy',dm.qry_pedido.FieldByName('DATA').AsDateTime),
+                dm.qry_pedido.FieldByName('IND_ENTREGUE').AsString,
+                dm.qry_pedido.FieldByName('IND_SINC').AsString,
+                dm.qry_pedido.FieldByName('VALOR_TOTAL').AsFloat);
+      dm.qry_pedido.Next;
+   end;
 
    lv_pedido.EndUpdate;
 end;
@@ -195,9 +208,12 @@ procedure TFrmPrincipal.FormShow(Sender: TObject);
 begin
    SelecionaTab(img_tab_pedido);
 
-   AddPedido('0001','99 Coders','15/02/2022','S','P',500);
-   AddPedido('0002','Walmart','18/02/2022','N','O',9000);
-   AddPedido('0003','Kalunga','19/02/2022','N','P',1000);
+   ListarPedido('',True,0);
+end;
+
+procedure TFrmPrincipal.img_busca_pedidoClick(Sender: TObject);
+begin
+   ListarPedido(edt_busca_pedido.Text, True);
 end;
 
 procedure TFrmPrincipal.img_tab_pedidoClick(Sender: TObject);
