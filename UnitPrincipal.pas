@@ -8,15 +8,24 @@ uses
   System.UITypes,
   System.Classes,
   System.Variants,
+  System.Actions,
 
   FMX.Types,
   FMX.Controls,
   FMX.Forms,
   FMX.Graphics,
   FMX.Dialogs,
-  FMX.Layouts, FMX.Objects, FMX.TabControl, System.Actions, FMX.ActnList,
-  FMX.ListView.Types, FMX.ListView.Appearances, FMX.ListView.Adapters.Base,
-  FMX.ListView, FMX.Controls.Presentation, FMX.StdCtrls, FMX.Edit;
+  FMX.Layouts,
+  FMX.Objects,
+  FMX.TabControl,
+  FMX.ActnList,
+  FMX.ListView.Types,
+  FMX.ListView.Appearances,
+  FMX.ListView.Adapters.Base,
+  FMX.ListView,
+  FMX.Controls.Presentation,
+  FMX.StdCtrls,
+  FMX.Edit;
 
 type
   TFrmPrincipal = class(TForm)
@@ -81,9 +90,10 @@ type
     procedure SelecionaTab(img: TImage);
     procedure FormCreate(Sender: TObject);
     procedure FormShow(Sender: TObject);
-    procedure AddPedido(pedido, cliente, dt_pedido, ind_entregue, status :string;
+    procedure AddPedido(pedido, cliente, dt_pedido, ind_entregue, ind_sinc :string;
                         valor : Double);
   private
+    procedure ListarPedido(buscar: string; ind_clear: boolean; pagina: integer);
     { Private declarations }
   public
     { Public declarations }
@@ -94,10 +104,49 @@ var
 
 implementation
 
+uses
+  UnitDM;
+
 {$R *.fmx}
 
+procedure TFrmPrincipal.ListarPedido(buscar: string; ind_clear: boolean; pagina: integer);
+begin
+   dm.qry_pedido.Active := False;
+   dm.qry_pedido.SQL.Clear;
+   dm.qry_pedido.SQL.Add('SELECT P.*,C.NOME ');
+   dm.qry_pedido.SQL.Add('FROM TAB_PEDIDO P ');
+   dm.qry_pedido.SQL.Add('INNER JOIN TAB_CLIENTE C ON (C.COD_CLIENTE = P.COD_CLIENTE) ');
+
+   // Filtro
+   if buscar <> '' then
+   begin
+      dm.qry_pedido.SQL.Add('WHERE....');
+   end;
+
+   dm.qry_pedido.Active := True;
+
+   //Limpar Listagem
+   if ind_clear then
+      lv_pedido.Items.Clear;
+
+   lv_pedido.BeginUpdate;
+
+   while not dm.qry_pedido.Eof do
+   begin
+      AddPedido(dm.qry_pedido.FieldByName('PEDIDO').AsString,
+                dm.qry_pedido.FieldByName('NOME').AsString,
+                FormatDateTime('dd/mm/yyyy',dm.qry_pedido.FieldByName('DATA').AsDateTime),
+                dm.qry_pedido.FieldByName('IND_ENTREGUE').AsString,
+                dm.qry_pedido.FieldByName('IND_SINC').AsString,
+                dm.qry_pedido.FieldByName('VALOR_TOTAL').AsFloat);
+      dm.qry_pedido.Next;
+   end;
+
+   lv_pedido.EndUpdate;
+end;
+
 procedure TFrmPrincipal.AddPedido(pedido, cliente, dt_pedido, ind_entregue,
-  status: string; valor: Double);
+  ind_sinc: string; valor: Double);
 var
    item : TListViewItem;
    txt  : TListItemText;
@@ -110,7 +159,7 @@ begin
       begin
         //Numero do Pedido...
         txt      := TListItemText(Objects.FindDrawable('TxtPedido'));
-        if status = 'P' then
+        if ind_sinc = 'S' then
            txt.Text := 'Pedido #' + pedido
         else
            txt.Text := 'Orçamento';
@@ -136,7 +185,7 @@ begin
 
         //Sincronizado...
         img      := TListItemImage(Objects.FindDrawable('ImgSinc'));
-        if status = 'P' then
+        if ind_sinc = 'S' then
            img.Bitmap := img_sinc.Bitmap
         else
            img.Bitmap := img_nao_sinc.Bitmap
@@ -157,9 +206,7 @@ procedure TFrmPrincipal.FormShow(Sender: TObject);
 begin
    SelecionaTab(img_tab_pedido);
 
-   AddPedido('0001','99 Coders','15/02/2022','S','P',500);
-   AddPedido('0002','Walmart','18/02/2022','N','O',9000);
-   AddPedido('0003','Kalunga','19/02/2022','N','P',1000);
+   ListarPedido('',True,0);
 end;
 
 procedure TFrmPrincipal.img_tab_pedidoClick(Sender: TObject);
