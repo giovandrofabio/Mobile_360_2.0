@@ -30,6 +30,7 @@ type
     conn: TFDConnection;
     qry_geral: TFDQuery;
     qry_pedido: TFDQuery;
+    qry_cliente: TFDQuery;
     procedure DataModuleCreate(Sender: TObject);
   private
     { Private declarations }

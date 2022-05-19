@@ -25,4 +25,9 @@ object dm: Tdm
     Left = 296
     Top = 128
   end
+  object qry_cliente: TFDQuery
+    Connection = conn
+    Left = 248
+    Top = 184
+  end
 end

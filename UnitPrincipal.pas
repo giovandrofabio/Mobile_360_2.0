@@ -60,7 +60,7 @@ type
     lv_clientes: TListView;
     Layout2: TLayout;
     Rectangle2: TRectangle;
-    Edit1: TEdit;
+    edt_busca_cliente: TEdit;
     Rectangle3: TRectangle;
     Label2: TLabel;
     Image2: TImage;
@@ -85,15 +85,21 @@ type
     img_sinc: TImage;
     img_nao_sinc: TImage;
     img_busca_pedido: TImage;
+    img_busca_cliente: TImage;
     procedure img_tab_pedidoClick(Sender: TObject);
     procedure SelecionaTab(img : TImage);
     procedure FormCreate(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure AddPedido(pedido, cliente, dt_pedido, ind_entregue, ind_sinc : string;
                         valor : double);
-    procedure ListarPedido(busca : string; ind_clear : boolean);
+    procedure AddCliente(cod_cliente,nome, endereco, cidade, fone: string);
+    procedure ListarPedido(busca : string; ind_clear : boolean; delay : Integer);
+    procedure ListarCliente(busca: string; ind_clear: boolean; delay : Integer);
     procedure img_busca_pedidoClick(Sender: TObject);
     procedure lv_pedidoPaint(Sender: TObject; Canvas: TCanvas;
+      const ARect: TRectF);
+    procedure img_busca_clienteClick(Sender: TObject);
+    procedure lv_clientesPaint(Sender: TObject; Canvas: TCanvas;
       const ARect: TRectF);
   private
     { Private declarations }
@@ -162,7 +168,91 @@ begin
     end;
 end;
 
-procedure TFrmPrincipal.ListarPedido(busca: string; ind_clear: boolean);
+procedure TFrmPrincipal.AddCliente(cod_cliente,nome, endereco, cidade, fone: string);
+var
+    item : TListViewItem;
+    txt : TListItemText;
+begin
+    try
+        item := lv_clientes.Items.Add;
+
+        with item do
+        begin
+            // Nome...
+            txt := TListItemText(Objects.FindDrawable('TxtNome'));
+            txt.Text := nome;
+
+            // Endereço...
+            txt := TListItemText(Objects.FindDrawable('TxtEndereco'));
+            txt.Text := endereco + ' - ' + cidade;
+
+            // Fone...
+            txt := TListItemText(Objects.FindDrawable('TxtFone'));
+            txt.Text := fone;
+
+        end;
+    except on ex:exception do
+        showmessage('Erro ao inserir Cliente na lista: ' + ex.Message);
+    end;
+end;
+
+procedure TFrmPrincipal.ListarCliente(busca: string; ind_clear: boolean; delay : Integer);
+begin
+    if lv_clientes.TagString = '1' then
+        exit;
+
+    lv_clientes.TagString := '1'; // Em processamento...
+
+    TThread.CreateAnonymousThread(procedure
+    begin
+        sleep(delay);
+
+        dm.qry_cliente.Active := false;
+        dm.qry_cliente.SQL.Clear;
+        dm.qry_cliente.SQL.Add('SELECT C.* ');
+        dm.qry_cliente.SQL.Add('FROM TAB_CLIENTE C');
+
+        // Filtro...
+        if busca <> '' then
+        begin
+            dm.qry_cliente.SQL.Add('WHERE C.NOME LIKE ''%'' || :BUSCA || ''%'' ');
+            dm.qry_cliente.ParamByName('BUSCA').Value  := busca;
+        end;
+
+        dm.qry_cliente.SQL.Add('ORDER BY NOME ');
+        dm.qry_cliente.SQL.Add('LIMIT :PAGINA, :QTD_REG');
+        dm.qry_cliente.ParamByName('PAGINA').Value  := lv_clientes.Tag * 15;
+        dm.qry_cliente.ParamByName('QTD_REG').Value := 15;
+        dm.qry_cliente.Active := true;
+
+        // Limpar listagem...
+        if ind_clear then
+            lv_clientes.Items.Clear;
+
+        lv_clientes.Tag := lv_clientes.Tag + 1;
+        lv_clientes.BeginUpdate;
+
+        while NOT dm.qry_cliente.Eof do
+        begin
+            TThread.Synchronize(nil, procedure
+            begin
+                AddCliente(dm.qry_cliente.FieldByName('COD_CLIENTE').AsString,
+                           dm.qry_cliente.FieldByName('NOME').AsString,
+                           dm.qry_cliente.FieldByName('ENDERECO').AsString,
+                           dm.qry_cliente.FieldByName('CIDADE').AsString,
+                           dm.qry_cliente.FieldByName('FONE').AsString);
+            end);
+
+            dm.qry_cliente.Next;
+        end;
+
+        lv_clientes.EndUpdate;
+        lv_clientes.TagString := ''; // Processamento terminou...
+
+    end).Start;
+end;
+
+procedure TFrmPrincipal.ListarPedido(busca: string; ind_clear: boolean; delay : Integer);
 begin
     if lv_pedido.TagString = '1' then
         exit;
@@ -171,6 +261,8 @@ begin
 
     TThread.CreateAnonymousThread(procedure
     begin
+        sleep(delay);
+
         dm.qry_pedido.Active := false;
         dm.qry_pedido.SQL.Clear;
         dm.qry_pedido.SQL.Add('SELECT P.*, C.NOME');
@@ -220,13 +312,23 @@ begin
     end).Start;
 end;
 
+procedure TFrmPrincipal.lv_clientesPaint(Sender: TObject; Canvas: TCanvas;
+  const ARect: TRectF);
+begin
+    if lv_clientes.Items.Count > 0 then
+    begin
+        if lv_clientes.GetItemRect(lv_clientes.Items.Count - 3).Bottom <= lv_clientes.Height then
+            ListarCliente(edt_busca_cliente.Text, false,0);
+    end;
+end;
+
 procedure TFrmPrincipal.lv_pedidoPaint(Sender: TObject; Canvas: TCanvas;
   const ARect: TRectF);
 begin
     if lv_pedido.Items.Count > 0 then
     begin
         if lv_pedido.GetItemRect(lv_pedido.Items.Count - 3).Bottom <= lv_pedido.Height then
-            ListarPedido(edt_busca_pedido.Text, false);
+            ListarPedido(edt_busca_pedido.Text, false,0);
     end;
 end;
 
@@ -241,13 +343,22 @@ begin
     SelecionaTab(img_tab_pedido);
 
     lv_pedido.Tag := 0;
-    ListarPedido('', true);
+    ListarPedido('', true, 0);
+
+    lv_clientes.Tag := 0;
+    ListarCliente('', true, 1500);
+end;
+
+procedure TFrmPrincipal.img_busca_clienteClick(Sender: TObject);
+begin
+   lv_clientes.Tag := 0;
+   ListarCliente(edt_busca_cliente.Text, True,0);
 end;
 
 procedure TFrmPrincipal.img_busca_pedidoClick(Sender: TObject);
 begin
     lv_pedido.Tag := 0;
-    ListarPedido(edt_busca_pedido.Text, true);
+    ListarPedido(edt_busca_pedido.Text, true,0);
 end;
 
 procedure TFrmPrincipal.img_tab_pedidoClick(Sender: TObject);
