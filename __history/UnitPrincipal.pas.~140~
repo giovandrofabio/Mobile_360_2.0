@@ -64,7 +64,6 @@ type
     Rectangle3: TRectangle;
     Label2: TLabel;
     Image2: TImage;
-    lv_notificacao: TListView;
     Rectangle5: TRectangle;
     Label3: TLabel;
     Label4: TLabel;
@@ -86,6 +85,8 @@ type
     img_nao_sinc: TImage;
     img_busca_pedido: TImage;
     img_busca_cliente: TImage;
+    lv_notificacao: TListView;
+    img_menu_notif: TImage;
     procedure img_tab_pedidoClick(Sender: TObject);
     procedure SelecionaTab(img : TImage);
     procedure FormCreate(Sender: TObject);
@@ -99,7 +100,11 @@ type
     procedure lv_pedidoPaint(Sender: TObject; Canvas: TCanvas;
       const ARect: TRectF);
     procedure img_busca_clienteClick(Sender: TObject);
+    procedure lv_clientesPaint(Sender: TObject; Canvas: TCanvas;
+      const ARect: TRectF);
   private
+    procedure AddNotificacao(cod_notificacao, data, titulo, texto, ind_lido,
+      ind_destaque: string);
     { Private declarations }
   public
     { Public declarations }
@@ -310,13 +315,57 @@ begin
     end).Start;
 end;
 
+procedure TFrmPrincipal.AddNotificacao(cod_notificacao,data, titulo, texto, ind_lido, ind_destaque: string);
+var
+    item : TListViewItem;
+    txt  : TListItemText;
+    img  : TListItemImage;
+begin
+    try
+        item := lv_notificacao.Items.Add;
+
+        with item do
+        begin
+            // Nome...
+            txt           := TListItemText(Objects.FindDrawable('TxtTitulo'));
+            txt.Text      := titulo;
+            txt.TagString := ind_destaque;
+
+            // Texto...
+            txt      := TListItemText(Objects.FindDrawable('TxtMensagem'));
+            txt.Text := texto;
+
+            // Data...
+            txt      := TListItemText(Objects.FindDrawable('TxtData'));
+            txt.Text := data;
+
+            // Imagem Menu...
+            txt      := TListItemText(Objects.FindDrawable('ImgMenu'));
+            txt.Text := data;
+
+        end;
+    except on ex:exception do
+        showmessage('Erro ao inserir Cliente na lista: ' + ex.Message);
+    end;
+end;
+
+procedure TFrmPrincipal.lv_clientesPaint(Sender: TObject; Canvas: TCanvas;
+  const ARect: TRectF);
+begin
+    if lv_clientes.Items.Count > 0 then
+    begin
+        if lv_clientes.GetItemRect(lv_clientes.Items.Count - 3).Bottom <= lv_clientes.Height then
+            ListarCliente(edt_busca_cliente.Text, false,0);
+    end;
+end;
+
 procedure TFrmPrincipal.lv_pedidoPaint(Sender: TObject; Canvas: TCanvas;
   const ARect: TRectF);
 begin
     if lv_pedido.Items.Count > 0 then
     begin
         if lv_pedido.GetItemRect(lv_pedido.Items.Count - 3).Bottom <= lv_pedido.Height then
-            ListarPedido(edt_busca_pedido.Text, false);
+            ListarPedido(edt_busca_pedido.Text, false,0);
     end;
 end;
 
@@ -340,13 +389,13 @@ end;
 procedure TFrmPrincipal.img_busca_clienteClick(Sender: TObject);
 begin
    lv_clientes.Tag := 0;
-   ListarCliente(edt_busca_cliente.Text, True);
+   ListarCliente(edt_busca_cliente.Text, True,0);
 end;
 
 procedure TFrmPrincipal.img_busca_pedidoClick(Sender: TObject);
 begin
     lv_pedido.Tag := 0;
-    ListarPedido(edt_busca_pedido.Text, true);
+    ListarPedido(edt_busca_pedido.Text, true,0);
 end;
 
 procedure TFrmPrincipal.img_tab_pedidoClick(Sender: TObject);

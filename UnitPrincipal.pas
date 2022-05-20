@@ -64,7 +64,6 @@ type
     Rectangle3: TRectangle;
     Label2: TLabel;
     Image2: TImage;
-    lv_notificacao: TListView;
     Rectangle5: TRectangle;
     Label3: TLabel;
     Label4: TLabel;
@@ -86,6 +85,8 @@ type
     img_nao_sinc: TImage;
     img_busca_pedido: TImage;
     img_busca_cliente: TImage;
+    lv_notificacao: TListView;
+    img_menu_notif: TImage;
     procedure img_tab_pedidoClick(Sender: TObject);
     procedure SelecionaTab(img : TImage);
     procedure FormCreate(Sender: TObject);
@@ -102,6 +103,8 @@ type
     procedure lv_clientesPaint(Sender: TObject; Canvas: TCanvas;
       const ARect: TRectF);
   private
+    procedure AddNotificacao(cod_notificacao, data, titulo, texto, ind_lido,
+      ind_destaque: string);
     { Private declarations }
   public
     { Public declarations }
@@ -310,6 +313,42 @@ begin
         lv_pedido.TagString := ''; // Processamento terminou...
 
     end).Start;
+end;
+
+procedure TFrmPrincipal.AddNotificacao(cod_notificacao,data, titulo, texto, ind_lido, ind_destaque: string);
+var
+    item : TListViewItem;
+    txt  : TListItemText;
+    img  : TListItemImage;
+begin
+    try
+        item           := lv_notificacao.Items.Add;
+        item.TagString := ind_lido;
+
+        with item do
+        begin
+            // Nome...
+            txt           := TListItemText(Objects.FindDrawable('TxtTitulo'));
+            txt.Text      := titulo;
+            txt.TagString := ind_destaque;
+
+            // Texto...
+            txt      := TListItemText(Objects.FindDrawable('TxtMensagem'));
+            txt.Text := texto;
+
+            // Data...
+            txt      := TListItemText(Objects.FindDrawable('TxtData'));
+            txt.Text := data;
+
+            // Imagem Menu...
+            img           := TListItemImage(Objects.FindDrawable('ImgMenu'));
+            img.Bitmap    := img_menu_notif.Bitmap;
+            img.TagString := cod_notificacao.ToDouble;
+
+        end;
+    except on ex:exception do
+        showmessage('Erro ao inserir Cliente na lista: ' + ex.Message);
+    end;
 end;
 
 procedure TFrmPrincipal.lv_clientesPaint(Sender: TObject; Canvas: TCanvas;
