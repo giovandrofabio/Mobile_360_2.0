@@ -25,7 +25,8 @@ uses
   FMX.ListView.Appearances,
   FMX.ListView.Adapters.Base,
   FMX.ListView,
-  FMX.Edit;
+  FMX.Edit,
+  FMX.TextLayout;
 
 type
   TFrmPrincipal = class(TForm)
@@ -39,7 +40,7 @@ type
     img_tab_notificacao: TImage;
     img_tab_mais: TImage;
     TabControl: TTabControl;
-    Circle1: TCircle;
+    c_notif: TCircle;
     TabPedido: TTabItem;
     TabCliente: TTabItem;
     TabMais: TTabItem;
@@ -102,9 +103,12 @@ type
     procedure img_busca_clienteClick(Sender: TObject);
     procedure lv_clientesPaint(Sender: TObject; Canvas: TCanvas;
       const ARect: TRectF);
+    procedure lv_notificacaoUpdateObjects(const Sender: TObject;
+      const AItem: TListViewItem);
   private
-    procedure AddNotificacao(cod_notificacao, data, titulo, texto, ind_lido,
+    procedure AddNotificacao(cod_notificacao, dt, titulo, texto, ind_lido,
       ind_destaque: string);
+    procedure ListarNotificacao(delay: integer);
     { Private declarations }
   public
     { Public declarations }
@@ -119,6 +123,36 @@ implementation
 
 uses UnitDM;
 
+
+function GetTextHeight(const D: TListItemText; const Width: single; const Text: string): Integer;
+var
+   Layout: TTextLayout;
+begin
+   // Create a TTextLayout to measure text dimensions
+   Layout := TTextLayoutManager.DefaultTextLayout.Create;
+   try
+      Layout.BeginUpdate;
+      try
+        // Initialize layout parameters with those of the drawable
+        Layout.Font.Assign(D.Font);
+        Layout.VerticalAlign   := D.TextVertAlign;
+        Layout.HorizontalAlign := D.TextAlign;
+        Layout.WordWrap        := D.WordWrap;
+        Layout.Trimming        := D.Trimming;
+        Layout.MaxSize         := TPointF.Create(Width, TTextLayout.MaxLayoutSize.Y);
+        Layout.Text            := Text;
+      finally
+        Layout.EndUpdate;
+      end;
+      // Get layout height
+      Result      := Round(Layout.Height);
+      // Add one em to the height
+      Layout.Text := 'm';
+      Result      := Result + Round(Layout.Height);
+   finally
+      Layout.Free;
+   end;
+end;
 
 procedure TFrmPrincipal.AddPedido(pedido, cliente, dt_pedido, ind_entregue,
   ind_sinc: string; valor: double);
@@ -255,6 +289,55 @@ begin
     end).Start;
 end;
 
+procedure TFrmPrincipal.ListarNotificacao(delay: integer);
+begin
+   TThread.CreateAnonymousThread(procedure
+   var
+     cont : Integer;
+   begin
+      sleep(delay);
+      cont := 0;
+
+      dm.qry_notificacao.Active := false;
+      dm.qry_notificacao.SQL.Clear;
+      dm.qry_notificacao.SQL.Add('SELECT * ');
+      dm.qry_notificacao.SQL.Add('FROM TAB_NOTIFICACAO ');
+      dm.qry_notificacao.SQL.Add('ORDER BY DATA DESC ');
+      dm.qry_notificacao.Active := true;
+
+      lv_notificacao.Items.Clear;
+
+      lv_notificacao.BeginUpdate;
+
+      while NOT dm.qry_notificacao.Eof do
+      begin
+         TThread.Synchronize(nil, procedure
+         begin
+            AddNotificacao(dm.qry_notificacao.FieldByName('COD_NOTIFICACAO').AsString,
+                           FormatDateTime('dd/mm/yy',dm.qry_notificacao.FieldByName('DATA').Asdatetime),
+                           dm.qry_notificacao.FieldByName('TITULO').AsString,
+                           dm.qry_notificacao.FieldByName('TEXTO').AsString,
+                           dm.qry_notificacao.FieldByName('IND_LIDO').AsString,
+                           dm.qry_notificacao.FieldByName('IND_DESTAQUE').AsString);
+         end);
+
+         if dm.qry_notificacao.FieldByName('IND_LIDO').AsString = 'N' then
+            inc(cont);
+
+         dm.qry_notificacao.Next;
+      end;
+
+      TThread.Synchronize(nil, procedure
+      begin
+         c_notif.Visible := cont > 0;
+      end);
+
+      lv_notificacao.EndUpdate;
+
+   end).Start;
+end;
+
+
 procedure TFrmPrincipal.ListarPedido(busca: string; ind_clear: boolean; delay : Integer);
 begin
     if lv_pedido.TagString = '1' then
@@ -315,7 +398,7 @@ begin
     end).Start;
 end;
 
-procedure TFrmPrincipal.AddNotificacao(cod_notificacao,data, titulo, texto, ind_lido, ind_destaque: string);
+procedure TFrmPrincipal.AddNotificacao(cod_notificacao,dt, titulo, texto, ind_lido, ind_destaque: string);
 var
     item : TListViewItem;
     txt  : TListItemText;
@@ -338,12 +421,12 @@ begin
 
             // Data...
             txt      := TListItemText(Objects.FindDrawable('TxtData'));
-            txt.Text := data;
+            txt.Text := dt;
 
             // Imagem Menu...
             img           := TListItemImage(Objects.FindDrawable('ImgMenu'));
             img.Bitmap    := img_menu_notif.Bitmap;
-            img.TagString := cod_notificacao.ToDouble;
+            img.TagFloat  := cod_notificacao.ToDouble;
 
         end;
     except on ex:exception do
@@ -359,6 +442,32 @@ begin
         if lv_clientes.GetItemRect(lv_clientes.Items.Count - 3).Bottom <= lv_clientes.Height then
             ListarCliente(edt_busca_cliente.Text, false,0);
     end;
+end;
+
+procedure TFrmPrincipal.lv_notificacaoUpdateObjects(const Sender: TObject;
+  const AItem: TListViewItem);
+var
+    txt : TListItemText;
+begin
+    // Titulo...
+    txt := TListItemText(AItem.Objects.FindDrawable('TxtTitulo'));
+    txt.Font.Size := 13;
+
+    // Destaque...
+    if txt.TagString = 'S' then
+        txt.TextColor := $FFE46868;
+
+    // Texto...
+    txt := TListItemText(AItem.Objects.FindDrawable('TxtMensagem'));
+    txt.Font.Size := 13;
+
+    // Ind Nao Lido...
+    if AItem.TagString = 'N' then
+        txt.Font.Style := [TFontStyle.fsBold];
+
+    txt.Width    := lv_notificacao.Width - 12;
+    txt.Height   := GetTextHeight(txt, txt.Width, txt.Text) + 10;
+    Aitem.Height := Trunc(txt.PlaceOffset.Y + txt.Height);
 end;
 
 procedure TFrmPrincipal.lv_pedidoPaint(Sender: TObject; Canvas: TCanvas;
@@ -379,6 +488,7 @@ end;
 
 procedure TFrmPrincipal.FormShow(Sender: TObject);
 begin
+    c_notif.Visible := False;
     SelecionaTab(img_tab_pedido);
 
     lv_pedido.Tag := 0;
@@ -386,6 +496,8 @@ begin
 
     lv_clientes.Tag := 0;
     ListarCliente('', true, 1500);
+
+    ListarNotificacao(2500);
 end;
 
 procedure TFrmPrincipal.img_busca_clienteClick(Sender: TObject);

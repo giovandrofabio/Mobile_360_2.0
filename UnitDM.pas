@@ -31,6 +31,7 @@ type
     qry_geral: TFDQuery;
     qry_pedido: TFDQuery;
     qry_cliente: TFDQuery;
+    qry_notificacao: TFDQuery;
     procedure DataModuleCreate(Sender: TObject);
   private
     { Private declarations }

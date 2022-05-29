@@ -30,4 +30,9 @@ object dm: Tdm
     Left = 248
     Top = 184
   end
+  object qry_notificacao: TFDQuery
+    Connection = conn
+    Left = 312
+    Top = 184
+  end
 end
